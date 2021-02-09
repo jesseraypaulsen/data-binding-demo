@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Data-Binding</title>
+
+    <!-- boilerplate ie copy-paste code -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script defer src="index.js"></script>
+  </head>
+
+  <body>
+    <main class="main">
+      
+      <div id="oneway">
+        <div style="text-align: center;">
+          <span class="heading">1-Way Data-Binding</span>
+        </div>
+        <div class="quote" data-binding="quote"></div>
+        <div class="author" data-binding="author"></div>
+      </div>
+
+      <div id="twoway">
+        <div style="text-align: center;">
+          <span class="heading">2-Way Data-Binding</span>
+        </div>
+        
+        <div class="row">
+          <div>
+            <label for="name">Enter your name:</label>
+            <input id="name" type="text" name="name"  data-model="name" />
+          </div>
+          <div>
+            <h1 data-binding="name"></h1>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="title">Enter your title:</label>
+            <input id="title" type="text" name="title" data-model="title" />
+          </div>
+          <div>
+            <h2 data-binding="title"></h2>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </body>
+</html>
