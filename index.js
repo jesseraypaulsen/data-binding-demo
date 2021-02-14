@@ -3,56 +3,64 @@ https://dev.to/phoinixi/one-way-data-binding-in-vanilla-js-poc-4dj7
 https://dev.to/phoinixi/two-way-data-binding-in-vanilla-js-poc-4e06
 */
 
-createState = (state, render) => {
-  return new Proxy(state, {
-    set(target, property, value) {
-      target[property] = value;
-      render();
-      return true;
-    }
-  });
-};
+function Binder(state, render) {
+  return new Binder.init(state, render);
+}
 
-const loadJSON = () => {   
-  var xobj = new XMLHttpRequest();
-  xobj.overrideMimeType("application/json");
-  xobj.open('GET', 'quotes.json', true);
-  xobj.onreadystatechange = () => {
-    if (xobj.readyState == 4 && xobj.status == "200") {
-      let data = JSON.parse(xobj.responseText);
-      setupIntervalListener(data);
-    }
-  };
-  xobj.send(null);  
+Binder.init = function(state, render) {
+  this._state = state || {};
+  this.render = render;
+}
+
+Binder.init.prototype = Binder.prototype;
+
+Object.defineProperty(Binder.prototype, "state", {
+  configurable: false,
+  enumerable: true,
+  get: function() {
+    return this._state;
+  },
+  set: function(val) {
+    this._state = val;
+    this.render();
+  }
+});
+
+function loadJSON() {
+  fetch('quotes.json')
+  .then(res => res.json())
+  .then(data => {
+    console.log(data);
+    setupIntervalListener(data);
+  })
+  .catch(err => console.err(err));
 }
 
 function setupIntervalListener({ quotes }) {
-  let state = states.oneWay;
   setInterval(() => { 
     const index = Math.floor(Math.random() * Math.floor(quotes.length));
     const { author, quote } = quotes[index];
     console.log(quote);
-    state.author = author;
-    state.quote = quote;
+    oneWay.state = { author, quote };
   }, 2000);
-
 }
 
 function setupListeners() {
-  let state = states.twoWay;
   const inputElements = document.querySelectorAll('[data-model]');
   
   inputElements.forEach((el) => {
     const name = el.dataset.model;
     el.addEventListener('keyup', (event) => {
-      state[name] = el.value;
-      console.log(state);
+      let obj = twoWay.state;
+      obj[name] = el.value;
+      twoWay.state = obj;
+      console.log(twoWay.state);
     });
   });
 }
 
 const renderOneWay = () => {
-  let state = states.oneWay;
+  let state = oneWay.state;
   let div = document.querySelector('#oneway'); // only look at the data attrs in this div
   const bindings = Array.from(div.querySelectorAll('[data-binding]')).map(
     e => e.dataset.binding
@@ -67,7 +75,7 @@ const renderOneWay = () => {
 };
 
 const renderTwoWay = () => {
-  let state = states.twoWay;
+  let state = twoWay.state;
   let div = document.querySelector('#twoway');
   let views = Array.from(div.querySelectorAll('[data-binding]'));
 
@@ -78,9 +86,8 @@ const renderTwoWay = () => {
   });
 };
 
-let states = {};
-states.oneWay = createState({ author: 'Bob', quote: 'Hahaha!' }, renderOneWay);
-states.twoWay = createState({ name: 'Bob', title: 'Administrator'}, renderTwoWay);
+let oneWay = new Binder({ author: 'Bob', quote: 'Hahaha!' }, renderOneWay);
+let twoWay = new Binder({ name: 'Bob', title: 'Administrator'}, renderTwoWay);
 
 loadJSON();
 setupListeners();
